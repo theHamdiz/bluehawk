@@ -4,17 +4,21 @@
 - Author: Ahmad Hamdi Emara
 - Website: https://hamdiz.me
 - Copyright: © 2023, Ahmad Hamdi Emara, All rights reserved.
+  
 ---
+
 ### Description:
 Blue Hawk is a powerful email scraping framework designed to efficiently extract email addresses from a given target website. Built with Python, it provides various features and scraping modes for an optimized and user-friendly experience.
+
 ---
+
 ### Dependencies:
 - BeautifulSoup
 - requests
 *(Note: The script will automatically handle the installation of required packages.)*
 
 ### Usage:
--- Clone the repository or download the bh.py and helper.py scripts.
+- Clone the repository or download the bh.py and helper.py scripts.
 
 ---
 
@@ -22,7 +26,7 @@ Blue Hawk is a powerful email scraping framework designed to efficiently extract
 ```zsh
 python bh.py -d [TARGET_URL] [OPTIONS]
 ```
--Replace [TARGET_URL] with the website URL from which you wish to scrape emails.
+- Replace [TARGET_URL] with the website URL from which you wish to scrape emails.
 
 ---
 
@@ -35,7 +39,7 @@ SMART: Intelligent scraping.
 
 ---
 
-For detailed help:
+#### For detailed help:
 
 ```zsh
 python bh.py --help
