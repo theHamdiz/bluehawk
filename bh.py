@@ -7,13 +7,10 @@ Copyright () 2023, Ahmad Hamdi Emara, All rights reserved.
 """
 
 from helper import *
-import argparse
-from enum import Enum
-import sys
+
 from bs4 import BeautifulSoup
 import requests.exceptions
 import urllib.parse
-from collections import deque
 import re
 import requests
 

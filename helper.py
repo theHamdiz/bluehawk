@@ -9,25 +9,25 @@ Copyright () 2023, Ahmad Hamdi Emara, All rights reserved.
 # Install dependencies
 
 import subprocess
+from enum import Enum
+from collections import deque
+import argparse
+import sys
+
+installed_a_package = False
 
 
 def install_package(package_name):
     """Install a Python package using pip."""
     subprocess.check_call(["pip", "install", package_name])
+    installed_a_package = True
 
 
 # List of modules and their corresponding pip package names
 modules_to_check = {
     'requests': 'requests',
-    're': None,  # part of the standard library, no need to install
-    'deque': None,  # part of the standard library, no need to install
     'urllib.parse': None,  # part of the standard library, no need to install
-    # part of requests, so we've already handled it
-    'requests.exceptions': 'requests',
-    'BeautifulSoup': 'beautifulsoup4',
-    'sys': None,  # part of the standard library, no need to install
-    'Enum': None,  # part of the standard library, no need to install
-    'argparse': None  # part of the standard library, no need to install
+    'bs4': 'beautifulsoup4',
 }
 
 for module, package_name in modules_to_check.items():
@@ -41,7 +41,8 @@ for module, package_name in modules_to_check.items():
             print(
                 f"Error: {module} is part of the standard library but couldn't be imported!")
 
-print("All required modules are available.")
+if installed_a_package:
+    print("All required modules are available.")
 
 
 def colorize(text: str, color: str, bold=False) -> str:
@@ -108,4 +109,3 @@ class RegexConfig:
                 self.pattern = self.all_patterns[next_pattern_index]
                 return True
         return False
-
