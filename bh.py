@@ -8,7 +8,7 @@ import requests.exceptions
 from bs4 import BeautifulSoup
 
 
-def colorize(text, color):
+def colorize(text, color, bold=False):
     colors = {
         'red': '\033[91m',
         'green': '\033[92m',
@@ -19,7 +19,9 @@ def colorize(text, color):
         'white': '\033[97m',
         'reset': '\033[0m'
     }
-    return colors[color] + text + colors['reset']
+    end_color = '\033[0m'
+    bold_code = '\033[1m' if bold else ''
+    return f"{colors[color]}{bold_code}{text}{end_color}"
 
 
 def ensure_http_protocol(url):
@@ -27,9 +29,6 @@ def ensure_http_protocol(url):
         # Assume http if not specified, but you can implement more advanced logic here
         return "http://" + url
     return url
-
-
-print('\033[91mB\033[92mL\033[93mU\033[94mE\033[95m \033[96mH\033[91mA\033[92mW\033[93mK\033[0m')
 
 
 class BlueHawk:
@@ -92,33 +91,32 @@ class BlueHawk:
 
         except KeyboardInterrupt:
             print(colorize('[-] Closing!', 'red', True))
+        except Exception:
+            print(colorize('[-] Terminating!', 'red', True))
 
     def display_emails(self):
+        if len(self.emails) < 1:
+            print(f"❌ {colorize('[-] No emails Found!', 'red', True)}")
         for mail in sorted(self.emails):
-            print(colorize(mail, 'green', True))
+            print(f"👉🏻 {colorize(mail, 'green', True)}")
 
     @staticmethod
     def identify():
-        return "Blue Hawk By Ahmad Hamdi Emara"
-
-
-def colorize(text, color, bold=False):
-    colors = {
-        'blue': '\033[94m',
-        'green': '\033[92m',
-        'red': '\033[91m'
-    }
-    end_color = '\033[0m'
-    bold_code = '\033[1m' if bold else ''
-    return f"{colors[color]}{bold_code}{text}{end_color}"
+        return colorize("Blue Hawk By Ahmad Hamdi Emara", 'blue', True)
 
 
 def main():
-    depth_input = input(colorize(
-        '[+] Enter Scrape Depth (Default is 100): ', 'blue', True))
-    max_depth = int(depth_input) if depth_input.isdigit() else 100
-    blue_hawk = BlueHawk(target_url=input(colorize(
-        '[+] Enter Target URL To Scan: ', 'blue', True)), max_depth=max_depth)
+    blue_hawk = None
+    if len(sys.argv) < 1:
+        depth_input = input(colorize(
+            '[+] Enter Scrape Depth (Default is 100): ', 'blue', True))
+        max_depth = int(depth_input) if depth_input.isdigit() else 100
+        blue_hawk = BlueHawk(target_url=input(colorize(
+            '[+] Enter Target URL To Scan: ', 'blue', True)), max_depth=max_depth)
+    else:
+        url = sys.argv[1]
+        max_depth = int(sys.argv[2])
+        blue_hawkize = BlueHawk(target_url=url, max_depth=max_depth)
     print(blue_hawk.identify())
     blue_hawk.scrape()
     blue_hawk.display_emails()
