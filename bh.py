@@ -39,7 +39,7 @@ class BlueHawk:
     ''')
 
     def scrape(self):
-        self.counter = 0
+        # self.counter = 0
         try:
             while len(self.urls):
                 try:
@@ -64,7 +64,7 @@ class BlueHawk:
             print(f"\nError encountered: {e}")
 
     def _check_exit_conditions(self):
-        if (self.mode == ScrapeMode.LAZY and self.counter > 1) or ((self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1):
+        if (self.mode == ScrapeMode.LAZY and self.counter > 1) or ((self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter >= self.max_depth):
             return True
 
         return False
@@ -111,7 +111,6 @@ class BlueHawk:
         if self.regex_config.change_pattern():
             print(colorize(
                 '😢[-] No emails found with the current regex pattern. Trying a different pattern...', 'red'))
-            self.counter = 0
         else:
             print(
                 colorize('❌[-] No emails found with any regex patterns. Exiting...', 'red'))
