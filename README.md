@@ -7,7 +7,7 @@
   
 ---
 
-![](resources/Blue%20Hawk.png)
+![](resources/logo.png)
 
 ### Description:
 `Blue Hawk` 🦅 is a powerful **information-gathering tool**  
@@ -28,6 +28,8 @@ for an optimized and user-friendly experience.
 ---
 
 #### There are two ways to run the script 👇
+
+![](resources/Blue%20Hawk.png)
 
 #### 1. Run the script using command-line arguments: 👇
 ```zsh
