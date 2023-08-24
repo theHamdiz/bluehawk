@@ -12,8 +12,8 @@ from bs4 import BeautifulSoup
 import requests.exceptions
 import urllib.parse
 import re
-import requests
 import csv
+
 
 class BlueHawk:
     def __init__(self, target_url, max_depth=10, mode=ScrapeMode.SMART):
@@ -41,41 +41,29 @@ class BlueHawk:
     ''')
 
     def scrape(self):
-        # self.counter = 0
-        try:
-            while len(self.urls):
-                try:
-                    self.counter += 1
-                    if self._check_exit_conditions():
-                        break
-                    url = self.urls.popleft()
-                    self.scraped_urls.add(url)
-                    print(colorize('🔥[%d] Processing %s' % (
-                        self.counter, self._truncate(url, 50)), 'yellow', True))
-                    response = None
-                    if (self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.LAZY) and (
-                            self._get_domain(self.target_url) == self._get_domain(url)):
-                        response = self._get_response(url)
-                    elif self.mode == ScrapeMode.VERBOSE:
-                        response = self._get_response(url)
-                    else:
-                        self.counter -= 1
-                        print(colorize("👉🏻[-] Skipping, use verbose mode if you want to go outside the boundaries "
-                                       "of the current domain!", 'red', False))
-                        continue
-                    if response:
-                        self._process_response(response, url)
-                except Exception:
-                    self.counter -= 1
-                    continue
-
-        except KeyboardInterrupt:
-            print(colorize('\n[-] Closing Session!', 'red', True))
-            sys.exit(1)
+        while len(self.urls):
+            self.counter += 1
+            if self._check_exit_conditions():
+                break
+            url = self.urls.popleft()
+            self.scraped_urls.add(url)
+            print(colorize(f'🔥[{self.counter}] Processing {self._truncate(url, 50)}', 'yellow', True))
+            response = None
+            if (self.mode in [ScrapeMode.SMART, ScrapeMode.LAZY] and self._get_domain(
+                    self.target_url) == self._get_domain(url)) or self.mode == ScrapeMode.VERBOSE:
+                response = self._get_response(url)
+            else:
+                # If the link was a link outside the boundaries of the domain.
+                self.counter -= 1
+                print(colorize("👉[-] Skipping, use verbose mode if you want to go outside the boundaries "
+                               "of the current domain!", 'red', False))
+                continue
+            if response:
+                self._process_response(response, url)
 
     def _check_exit_conditions(self):
-        if ((self.mode == ScrapeMode.LAZY and self.counter > 1) or
-                ((self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1)):
+        if ((self.mode == ScrapeMode.LAZY and self.counter > 1) or ((
+                                                                            self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1)):
             return True
 
         return False
@@ -120,24 +108,15 @@ class BlueHawk:
         if link.startswith('/'):
             link = base_url + link
         elif not link.startswith('http'):
-            link = path + '#' + link
+            link = path + '#' + link if not path.endswith('#') else path + link
 
         if link not in self.urls and link not in self.scraped_urls:
             self.urls.append(link)
             user_names = self._filter_and_construct_links(set(re.findall(self.regex_config.username_regex, link, re.I)))
             self.user_names.update(user_names)
 
-    # def _handle_no_emails_found(self):
-    #     if len(self.emails) < 1:
-    #         if self.regex_config.change_pattern():
-    #             print(colorize(
-    #                 '😢[-] No emails found with the current regex pattern. Trying a different pattern...', 'red'))
-    #         else:
-    #             print(
-    #                 colorize('❌[-] No emails found with any regex patterns. Exiting...', 'red'))
-
     @staticmethod
-    def _truncate(text, max_length):
+    def _truncate(text: str, max_length: int) -> str:
         if len(text) > max_length:
             return text[:max_length - 3] + "..."
         return text
@@ -149,7 +128,7 @@ class BlueHawk:
         domain = domain.split("www.")[-1]
         return domain
 
-    def _display_emails(self):
+    def _display_emails(self) -> None:
         if len(self.emails) >= 1:
             print("Emails found:\n")
             for mail in sorted(self.emails):
@@ -157,9 +136,9 @@ class BlueHawk:
             print(colorize("=-" * 50, 'yellow', True))
 
     @staticmethod
-    def _filter_and_construct_links(results):
+    def _filter_and_construct_links(results) -> set:
         # Regular routes that are not usernames
-        non_user_routes = {'in', 'p', 'sharer', 'intent', 'channel', 'shareArticle', 'reel', 'share', 'add'}
+        non_user_routes = {'in', 'p', 'sharer', 'intent', 'channel', 'shareArticle', 'reel', 'share', 'add', 'c'}
 
         # Filter out results with non-user routes
         filtered_results = {(platform, route) for platform, route in results if route not in non_user_routes}
@@ -169,7 +148,7 @@ class BlueHawk:
 
         return links
 
-    def _display_user_names(self):
+    def _display_user_names(self) -> None:
         if len(self.user_names) >= 1:
             print("Usernames found:\n")
             for username in sorted(self.user_names):
@@ -178,7 +157,8 @@ class BlueHawk:
 
     @staticmethod
     def _clean_phone_numbers(numbers: set) -> set:
-        return {('+' + n[6:] if n.startswith('tel:00') else n[4:]) for n in numbers}
+        return {('+' + n[6:] if n.startswith('tel:00') else ('+966' + n[1:] if n.startswith('0') else n[4:])) for n in
+                numbers}
 
     def _display_phone_numbers(self) -> None:
         if len(self.phone_numbers) >= 1:
@@ -190,12 +170,13 @@ class BlueHawk:
 
     def _display_results(self) -> None:
         print(colorize("=-" * 50, 'yellow', True))
-        print(f"Found {len(self.phone_numbers)} Phone Number(s), {len(self.emails)} Email(s) and {len(self.user_names)} Username(s)")
+        print(
+            f"✅ Found [{len(self.phone_numbers)}] Phone Number(s), [{len(self.emails)}] Email(s) and [{len(self.user_names)}] Username(s)")
         self._display_phone_numbers()
         self._display_emails()
         self._display_user_names()
 
-    def _filter_results(self):
+    def _filter_results(self) -> None:
         """
             Final Check on email results to remove false positives.
         """
@@ -204,20 +185,21 @@ class BlueHawk:
 
         self.emails -= emails_to_remove
 
-    def _save_results(self):
+    def _save_results(self) -> None:
         os.makedirs(os.path.join("output", self._get_domain(self.target_url)), exist_ok=True), [csv.writer(
             open(os.path.join("output", self._get_domain(self.target_url), f"{desc}.csv"), "w", newline='')).writerows(
-            [[item] for item in s]) for s, desc in zip([sorted(self.phone_numbers), sorted(self.emails), sorted(self.user_names)],
-                                                       ["phones", "emails", "usernames"]) if s], print(
+            [[item] for item in s]) for s, desc in
+            zip([sorted(self.phone_numbers), sorted(self.emails), sorted(self.user_names)],
+                ["phones", "emails", "usernames"]) if s], print(
             colorize("🔥[+] Results saved!", "green", True))
 
-    def end(self):
+    def end(self) -> None:
         self._filter_results()
         self._display_results()
         self._save_results()
 
     @staticmethod
-    def _identify():
+    def _identify() -> str:
         return colorize("Blue Hawk By Ahmad Hamdi Emara", 'magenta', True)
 
 
