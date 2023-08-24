@@ -7,8 +7,10 @@
   
 ---
 
+![](resources/Blue%20Hawk.png)
+
 ### Description:
-Blue Hawk is a powerful email scraping framework designed to efficiently extract email addresses from a given target website. Built with Python, it provides various features and scraping modes for an optimized and user-friendly experience.
+Blue Hawk is a powerful information-gathering framework designed to efficiently extract email addresses from a given target website. Built with Python, it provides various features and scraping modes for an optimized and user-friendly experience.
 
 ---
 

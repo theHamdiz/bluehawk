@@ -94,18 +94,30 @@ class ScrapeMode(Enum):
 class RegexConfig:
     def __init__(self, pattern=None):
         self.pattern = self.regex_all_emails if pattern is None else pattern
+        # self.data_type = 'Phone Numbers' if self.pattern == self.phone_regex else 'Emails'
 
-    regex_no_photos = r"(?<!.jpg|.jpeg|.png|.gif|.tiff|.bmp)[a-z0-9.-+_]+@[a-z0-9.-+_]+.[a-z]+"
-    regex_all_emails = r"[a-z0-9\.\-\+_]+@[a-z0-9\.\-\+_]+\.[a-z]+"
-    regex_simple_general = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+    emails_but_not_photos = (r"[a-zA-Z0-9\.\-\+_]+@[a-zA-Z0-9\.\-\+_]+\.(?!(jpg|jpeg|png|gif|tiff|heic|bmp|webp)$)["
+                             r"a-zA-Z]+")
+    regex_all_emails = r"[a-zA-Z0-9\.\-\+_]+@[a-zA-Z0-9\.\-\+_]+\.[a-zA-Z]+"
+    regex_simple_general = r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+"
     regex_stricter = r"\b[A-Za-z0-9._%+-]+@(?![A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b)[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
-    all_patterns = [regex_stricter, regex_all_emails,
-                    regex_no_photos, regex_simple_general]
+    mailto_regex = r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+    phone_regex = r'tel:(?:\+|00(?!0))\d{1,3}[\s]?\d{10,13}'
+    username_regex = (r'https?://(?:www\.)?(facebook\.com|twitter\.com|instagram\.com|linkedin\.com|x\.com|youtube\.com'
+                      r'|tiktok\.com|snapchat\.com)/([^/\s?]+)')
+
+    all_patterns = [regex_stricter, emails_but_not_photos, regex_simple_general,
+                    mailto_regex, regex_all_emails]
 
     def change_pattern(self) -> bool:
         for i, pattern in enumerate(self.all_patterns):
             if self.pattern == pattern:
                 next_pattern_index = (i + 1) % len(self.all_patterns)
                 self.pattern = self.all_patterns[next_pattern_index]
+                # self.data_type = 'Phone Numbers' if self.pattern == self.phone_regex else 'Emails'
                 return True
         return False
+
+
+class ResultSaver():
+    pass
