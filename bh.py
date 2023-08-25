@@ -54,7 +54,7 @@ class BlueHawk:
                     self.target_url) == self._get_domain(url)) or self.mode == ScrapeMode.VERBOSE:
                 response = self._get_response(url)
             else:
-                # If the link was a link outside the boundaries of the domain.
+                # If the link was a link outside the boundaries of the domain and the user is not using Verbose mode!
                 self.counter -= 1
                 print(colorize("👉[-] Skipping, use verbose mode if you want to go outside the boundaries "
                                "of the current domain!", 'red', False))
@@ -64,7 +64,7 @@ class BlueHawk:
 
     def _check_exit_conditions(self):
         if ((self.mode == ScrapeMode.LAZY and self.counter > 1) or ((
-                self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1)):
+                self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1)):  # Adding one here for good measure.
             return True
 
         return False
@@ -84,6 +84,13 @@ class BlueHawk:
             return None
 
     def _process_response(self, response, url):
+        """
+        Processes the html response from the server,
+        Depending on the mode used checks for embedded links
+        And adds them to the list of urls to scan, keeping the loop 
+        in the scrape method going on, and for each link it processes
+        it tries to capture emails, phone numbers and later on usernames
+        """
         new_emails = set(re.findall(
             self.regex_config.pattern, response.text, re.I))
         new_phones = self._clean_phone_numbers(
@@ -106,6 +113,11 @@ class BlueHawk:
             self.emails.update(new_emails)
 
     def _process_anchor(self, anchor, base_url, path):
+        """
+        This is the method that processes embedded links in any web page.
+        It tries to unify the structure of the link depending on whether
+        The link is relative or absolute!
+        """
         link = anchor.attrs['href'] if 'href' in anchor.attrs else ''
         path = path.replace('#', '')
         if link.startswith('/'):
@@ -141,6 +153,10 @@ class BlueHawk:
 
     @staticmethod
     def _filter_and_construct_links(results) -> set:
+        """
+        Removes share links and other links that usually
+        don't contain usernames or pages.
+        """
         # Regular routes that are not usernames
         non_user_routes = {'in', 'p', 'sharer', 'intent',
                            'channel', 'shareArticle', 'reel', 'share', 'add', 'c'}
@@ -163,6 +179,11 @@ class BlueHawk:
 
     @staticmethod
     def _clean_phone_numbers(numbers: set) -> set:
+        """
+        Standardize numbers in a unified template.
+        """
+        # I know one-liners are not easy to understand;
+        # But I just felt like implementing it this way.
         return {('+' + n[6:] if n.startswith('tel:00') else ('+966' + n[1:] if n.startswith('0') else n[4:])) for n in
                 numbers}
 
@@ -193,6 +214,14 @@ class BlueHawk:
         self.emails -= emails_to_remove
 
     def _save_results(self) -> None:
+        """
+        For each result type (email, phone number, username)
+        It creates a csv file containing the data for that type
+        Only if the result is not empty.
+        Its also responsible for creating a folder for each website scraped.
+        """
+        # I know one-liners through list-comprehension are hard to understand;
+        # but I felt like I should do it that way.
         os.makedirs(os.path.join("output", self._get_domain(self.target_url)), exist_ok=True), [csv.writer(
             open(os.path.join("output", self._get_domain(self.target_url), f"{desc}.csv"), "w", newline='')).writerows(
             [[item] for item in s]) for s, desc in
