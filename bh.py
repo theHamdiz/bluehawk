@@ -247,9 +247,9 @@ def main():
         parser.add_argument("-d", "--domain", type=str,
                             help="Target domain (URL) to scan.")
         parser.add_argument("-m", "--mode", type=str, choices=["lazy", "smart", "verbose"], default="smart",
-                            help="Scraping mode (lazy, smart, verbose). Default is verbose.")
+                            help="Scraping mode (lazy, smart, verbose). Default is smart.")
         parser.add_argument("-l", "--max-depth", type=int, default=10,
-                            help="Maximum depth to scrape. Default is 10.")
+                            help="Maximum depth (Limit) to scrape. Default is 10.")
 
         domain, max_depth, mode = None, None, None
         # Check if the script is launched without any parameters or with positional parameters
