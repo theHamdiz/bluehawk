@@ -1,5 +1,5 @@
 """
-Blue Hawk By Ahmad Hamdi Emara - Email Scraper Framework
+Blue Hawk By Ahmad Hamdi Emara - Information Gathering Tool
 Version: 1.0.0
 Author: Ahmad Hamdi Emara
 Website: https://hamdiz.me
@@ -47,7 +47,8 @@ class BlueHawk:
                 break
             url = self.urls.popleft()
             self.scraped_urls.add(url)
-            print(colorize(f'🔥[{self.counter}] Processing {self._truncate(url, 50)}', 'yellow', True))
+            print(colorize(
+                f'🔥[{self.counter}] Processing {self._truncate(url, 50)}', 'yellow', True))
             response = None
             if (self.mode in [ScrapeMode.SMART, ScrapeMode.LAZY] and self._get_domain(
                     self.target_url) == self._get_domain(url)) or self.mode == ScrapeMode.VERBOSE:
@@ -63,7 +64,7 @@ class BlueHawk:
 
     def _check_exit_conditions(self):
         if ((self.mode == ScrapeMode.LAZY and self.counter > 1) or ((
-                                                                            self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1)):
+                self.mode == ScrapeMode.SMART or self.mode == ScrapeMode.VERBOSE) and self.counter > self.max_depth + 1)):
             return True
 
         return False
@@ -85,7 +86,8 @@ class BlueHawk:
     def _process_response(self, response, url):
         new_emails = set(re.findall(
             self.regex_config.pattern, response.text, re.I))
-        new_phones = self._clean_phone_numbers(set(re.findall(self.regex_config.phone_regex, response.text, re.I)))
+        new_phones = self._clean_phone_numbers(
+            set(re.findall(self.regex_config.phone_regex, response.text, re.I)))
 
         self.phone_numbers.update(new_phones)
         self.emails.update(new_emails)
@@ -99,7 +101,8 @@ class BlueHawk:
         # Here we are checking for found  emails.
         if not new_emails:
             # If they're directly visible in the HTML, We check mailto links.
-            new_emails = set(re.findall(self.regex_config.mailto_regex, response.text, re.I))
+            new_emails = set(re.findall(
+                self.regex_config.mailto_regex, response.text, re.I))
             self.emails.update(new_emails)
 
     def _process_anchor(self, anchor, base_url, path):
@@ -112,7 +115,8 @@ class BlueHawk:
 
         if link not in self.urls and link not in self.scraped_urls:
             self.urls.append(link)
-            user_names = self._filter_and_construct_links(set(re.findall(self.regex_config.username_regex, link, re.I)))
+            user_names = self._filter_and_construct_links(
+                set(re.findall(self.regex_config.username_regex, link, re.I)))
             self.user_names.update(user_names)
 
     @staticmethod
@@ -138,10 +142,12 @@ class BlueHawk:
     @staticmethod
     def _filter_and_construct_links(results) -> set:
         # Regular routes that are not usernames
-        non_user_routes = {'in', 'p', 'sharer', 'intent', 'channel', 'shareArticle', 'reel', 'share', 'add', 'c'}
+        non_user_routes = {'in', 'p', 'sharer', 'intent',
+                           'channel', 'shareArticle', 'reel', 'share', 'add', 'c'}
 
         # Filter out results with non-user routes
-        filtered_results = {(platform, route) for platform, route in results if route not in non_user_routes}
+        filtered_results = {(platform, route) for platform,
+                            route in results if route not in non_user_routes}
 
         # Construct platform links without 'https://www.'
         links = {f"{platform}/{route}" for platform, route in filtered_results}
@@ -181,7 +187,8 @@ class BlueHawk:
             Final Check on email results to remove false positives.
         """
         extensions = (".png", ".webp", ".jpg", ".jpeg", ".tiff", ".gif")
-        emails_to_remove = {email for email in self.emails if str(email).endswith(extensions)}
+        emails_to_remove = {email for email in self.emails if str(
+            email).endswith(extensions)}
 
         self.emails -= emails_to_remove
 
